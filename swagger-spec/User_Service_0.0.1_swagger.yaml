@@ -1,0 +1,383 @@
+swagger: '2.0'
+info:
+  description: >-
+    This is the API of User Service. Users can be created, deleted, edited, and
+    retrieved. Users can also log-in, which will create a session cookie and
+    issue a token. Logging out will delete the code.
+  version: 0.0.1
+  title: iKoreaTown User Service API
+  
+  termsOfService: 'https://www.iKoreaTown.net/terms'
+  contact:
+    email: jinguanglong11@icloud.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+    
+tags:
+- name: admin
+  description: Administrators can manage any users except for other adminstrators.
+- name: regular
+  description: Regular user can create, read, update, delete own account.
+
+paths:
+  /user:
+    get:
+      tags:
+      - admin
+      summary: Returns all users in the database
+      description: Only the "admin" user can access this.
+      operationId: getUsers
+      security:
+        - JWT: []
+      parameters:
+        - name: listSize
+          in: query
+          description: Number of users returned
+          type: integer
+        - name: pageNumber
+          in: query
+          description: page number
+          type: integer
+        - $ref: '#/parameters/jwtToken'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Returns the list of users
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/user'
+        '401':
+          $ref: '#/responses/Standard401ErrorResponse'
+    post:
+      tags:
+      - admin
+      - regular
+      summary: Create a new user
+      description: >-
+        Admin user can create a new user, or users can register and create their
+        own account .
+      operationId: createUser
+      security:
+        - JWT: []
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/userData'
+        - $ref: '#/parameters/jwtToken'
+      responses:
+        '200':
+          description: User created successfully
+          schema:
+            $ref: '#/definitions/Token'
+          headers:
+            Location:
+              type: string
+              description: The Server returns the url of the new user
+        '400':
+          $ref: '#/responses/Standard400ErrorResponse'
+        '500':
+          $ref: '#/responses/Standard500ErrorResponse'
+  '/user/{username}':
+    get:
+      tags:
+      - admin
+      - regular
+      summary: Retrieves the user
+      description: >-
+        'Regular' users can only retrieve their own account, not other users. Except for the "admin" user, who can retrieve anyone.
+      operationId: getUserByName
+      security:
+        - JWT: []
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/username'
+        - $ref: '#/parameters/jwtToken'
+      responses:
+        '200':
+          description: Returns the user's data
+          schema:
+            $ref: '#/definitions/user'
+        '401':
+          $ref: '#/responses/Standard401ErrorResponse'
+        '404':
+          $ref: '#/responses/Standard404ErrorResponse'
+    put:
+      tags:
+      - admin
+      - regular
+      summary: Update a user
+      description: >-
+        Users can only edit their own account, not other users. Except for the
+        admin user, who can edit anyone.
+      operationId: editUser
+      security:
+        - JWT: []
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/username'
+        - $ref: '#/parameters/jwtToken'
+      responses:
+        '200':
+          description: User data was saved successfully
+          schema:
+            $ref: '#/definitions/user'
+        '400':
+          $ref: '#/responses/Standard400ErrorResponse'
+        '401':
+          $ref: '#/responses/Standard401ErrorResponse'
+        '404':
+          description: 'The {username} was not found.'
+    delete:
+      tags:
+      - admin
+      - regular
+      summary: Delete a user
+      description: >-
+        User can delete their own account, not other users. Except for the admin
+        user, who can delete any one.
+      operationId: deleteUser
+      security:
+        - JWT: []
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/username'
+      responses:
+        '204':
+          description: User account was deleted
+        '400':
+          $ref: '#/responses/Standard400ErrorResponse'
+        '404':
+          $ref: '#/responses/Standard404ErrorResponse'
+  /login:
+    post:
+      summary: User log in
+      operationId: userLogin
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: credential
+          required: true
+          description: The login credentials
+          schema:
+            required:
+              - username
+              - password
+            properties:
+              username:
+                type: string
+              password:
+                type: string
+      responses:
+        '200':
+          description: An object contain User object and access token.
+          schema:
+            type: object
+            properties:
+              user:
+                type: object
+                description: the user object
+              token:
+                type: string
+                description: the access token
+          
+  /logout:
+    get:
+      summary: Logs out
+      description: 'Users can log themselves out, not other users.'
+      security:
+        - JWT: []
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/jwtToken'
+      responses:
+        '204':
+          description: Logout successfully
+        '401':
+          $ref: '#/responses/Standard401ErrorResponse'
+        '404':
+          $ref: '#/responses/Standard404ErrorResponse'
+          
+definitions:
+  user:
+    type: object
+    description: user schema
+    required:
+      - username
+      - password
+      - name
+      - email
+      - role
+    properties:
+      id:
+        type: string
+        format: ObjectId
+        description: user id must be unique.
+      username:
+        type: string
+        minLength: 6
+        maxLength: 20
+        pattern: ^\w+$
+        description: username must be unique.
+      email:
+        type: string
+        pattern: >-
+          /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        description: email must be unique.
+      mobileNumber:
+        type: string
+        description: telephone must be unique.
+      role:
+        type: string
+        enum:
+          - god
+          - admin
+          - manager
+          - regular
+      password:
+        type: string
+        minLength: 8
+        description: 'a super-secure, 8-character password'
+      firstName:
+        type: string
+        minLength: 1
+      lastName:
+        type: string
+        minLength: 1
+      gender:
+        type: string
+        enum:
+          - male
+          - female
+      address:
+        type: string
+      point:
+        type: integer
+        default: 0
+      userStatus:
+        type: string
+        enum:
+          - normal
+          - suspended
+      profilePhotoUri:
+        type: string
+        description: User profile Photo url
+      lastLoginAt:
+        type: string
+        format: date-time
+        description: when the user last logged in.
+      createdAt:
+        type: string
+        format: date-time
+        description: when the user registered.
+        readOnly: true
+    example:
+      id: 5a4ef8f5537cd042155581a5
+      username: tony
+      email: tony@abc.com
+      mobileNumber: 123-1234-1234
+      role: regular
+      password: 12345678
+      firstName: Tony
+      lastName: Kim
+      gender: male
+      address: Bla bla Bla
+      point: 0
+      userStatus: normal
+      profilePhotoUri: 'https://www.ikoreatwon.com/user/1/avatar.png'
+      lastLoginAt: 2017-05-11T14-00-32Z
+      createdAt: 2015-01-01T00-00-00Z
+      
+  Token:
+    type: string
+    description: jwt access token
+    
+  Error:
+    type: object
+    properties:
+      status:
+        type: string
+        example: 404
+      message:
+        type: string
+        example: Not found
+        
+responses:
+  Standard400ErrorResponse:
+    description: Bad JSON formatting in the request.
+    schema:
+      $ref: '#/definitions/Error'
+      
+  Standard401ErrorResponse:
+    description: Permission denied.
+    schema:
+      $ref: '#/definitions/Error'
+      
+  Standard404ErrorResponse:
+    description: Not found.
+    schema:
+      $ref: '#/definitions/Error'
+      
+  Standard500ErrorResponse:
+    description: An unexpected error occured.
+    schema:
+      $ref: '#/definitions/Error'
+      
+securityDefinitions:
+  JWT:
+    type: apiKey
+    name: Authorization
+    description: >-
+      For accessing the API, a valid JWT token must be passed in all the queries
+      in the 'Authorization' header.
+    in: header
+    
+parameters:
+  jwtToken:
+    name: token
+    in: header
+    required: true
+    description: access token
+    type: string
+    
+  username:
+    name: username
+    in: path
+    required: true
+    type: string
+    description: 'This is the {username} path parameters'
+    
+  userData:
+    name: userData
+    in: body
+    required: true
+    schema:
+      $ref: '#/definitions/user'
+    description: The user data for create/update operations
+    
+# Added by API Auto Mocking Plugin
+host: localhost:3001
+basePath: /api/v1/
+schemes:
+ - https

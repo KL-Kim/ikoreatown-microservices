@@ -1,0 +1,214 @@
+swagger: '2.0'
+info:
+  description: This is the API of Review/Comment Service
+  version: 0.0.1
+  title: Comment/Review Service API
+
+  termsOfService: https://www.iKoreaTown.net/terms
+  contact:
+    email: jinguanglong11@icloud.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+# tags are used for organizing operations
+tags:
+- name: admin
+- name: manager
+- name: regular
+
+paths:
+  /comment:
+    get:
+      tags:
+      - manager
+      - admin
+      summary: Retrieve all reviews/comments
+      operationId: getComments
+      description: |
+        Only 'admin' or 'manager' can access this.
+      produces:
+      - application/json
+      parameters:
+      - in: query
+        name: listSize
+        description: Number of comments returned
+        required: false
+        type: integer
+      - in: query
+        name: pageNumber
+        description: page number
+        type: integer
+      - $ref: '#/parameters/jwtToken'
+      
+      responses:
+        200:
+          description: search results matching criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Review'
+    
+definitions:
+  Review:
+    type: object
+    required:
+    - id
+    - subjectId
+    - author
+    - type
+    - status
+    - rating
+    - content
+    - createdAt
+    properties:
+      id:
+        type: string
+        format: ObjectId
+        example: 5a4ef8f5537cd042155581a5
+      state:
+        type: string
+        enum: 
+        - draft
+        - published
+      subjectId:
+        type: string
+        format: ObjectId
+        example: 5a4ef8f5537cd042155581b1
+      author:
+        type: string
+        format: ObjectId
+        example: 5a4ef8f5537cd042155581b1
+      parentCommentId:
+        type: string
+        format: ObjectId
+        default: null
+        example: 5a4ef8f5537cd042155581b1
+      type:
+        type: string
+        enum:
+        - review
+        - comment
+      tags:
+        type: array
+        items:
+          type: string
+          example: delicious
+      content:
+        type: string
+        example: Very very good.
+      rating:
+        type: integer
+        example: 5
+      status:
+        type: string
+        enum:
+        - approved
+        - suspended
+      createdAt:
+        type: string
+        format: date-time
+      modifiedAt:
+        type: string
+        format: date-time
+      upVote:
+        type: object
+        required: 
+        - count
+        properties:
+          userList:
+            type: array
+            items: 
+              type: string
+              example: 5a4ef8f5537cd042155581b1
+          count:
+            type: integer
+            default: 0
+            example: 7
+      downVote:
+        type: object
+        required: 
+        - count
+        properties:
+          userList:
+            type: array
+            items: 
+              type: string
+              example: 5a4ef8f5537cd042155581b1
+          count:
+            type: integer
+            default: 0
+            example: 7
+      imageUri:
+        type: object
+        properties:
+          imageBaseUrl:
+            type: string
+          imageFiles:
+            type: array
+            items:
+              type: string
+              format: file
+
+  Error:
+    type: object
+    required:
+    - status
+    - message
+    properties:
+      status:
+        type: integer
+        example: 404
+      message:
+        type: string
+        example: Not found
+    
+  
+responses:
+  Standard400ErrorResponse:
+    description: Bad request.
+    schema:
+      $ref: '#/definitions/Error'
+      
+  Standard401ErrorResponse:
+    description: Unauthorized.
+    schema:
+      $ref: '#/definitions/Error'
+      
+  Standard403ErrorResponse:
+    description: Forbidden.
+    schema:
+      $ref: '#/definitions/Error'
+      
+  Standard404ErrorResponse:
+    description: Not found.
+    schema:
+      $ref: '#/definitions/Error'
+      
+  Standard500ErrorResponse:
+    description: An unexpected error occured.
+    schema:
+      $ref: '#/definitions/Error'
+
+securityDefinitions:
+  JWT:
+    type: apiKey
+    name: Authorization
+    description: For accessing the API, a valid JWT token must be passed in all the queries in the 'Authorization' header.
+    in: header
+    
+parameters:
+  jwtToken:
+    name: token
+    in: header
+    required: true
+    description: access token
+    type: string
+    
+# Added by API Auto Mocking Plugin
+host: localhost:3003
+# basePath: /ikoreatown/ikoreatown_comment_service_api/1.0.0
+schemes:
+ - https
+# Added by API Auto Mocking Plugin
+basePath: /api/v1
