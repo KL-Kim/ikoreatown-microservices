@@ -1,0 +1,54 @@
+http:
+  port: 8080
+admin:
+  port: 9876
+  hostname: localhost
+apiEndpoints:
+  userApi:
+    host: 'localhost'
+    paths:
+      - '/avatars/*'
+      - '/api/v1/user'
+      - '/api/v1/user/*'
+      - '/api/v1/auth/*'
+  businessApi:
+    host: 'localhost'
+    paths:
+      - '/api/v1/business'
+      - '/api/v1/business/*'
+      - '/api/v1/pca/*'
+serviceEndpoints:
+  user-service:
+    url: 'http://localhost:3001/'
+  business-service:
+    url: 'http://localhost:3002/'
+policies:
+  - basic-auth
+  - cors
+  - expression
+  - key-auth
+  - log
+  - oauth2
+  - proxy
+  - rate-limit
+pipelines:
+  user:
+    apiEndpoints:
+      - userApi
+    policies:
+    # Uncomment `key-auth:` when instructed to in the Getting Started guide.
+    # - key-auth:
+      - proxy:
+          - action:
+              serviceEndpoint: user-service
+              changeOrigin: true
+  business:
+    apiEndpoints:
+      - businessApi
+    policies:
+    # Uncomment `key-auth:` when instructed to in the Getting Started guide.
+    # - key-auth:
+      - proxy:
+          - action:
+              serviceEndpoint: business-service
+              changeOrigin: true

@@ -1,0 +1,710 @@
+openapi: 3.0.0
+
+info:
+  title: User Service API
+  description: >-
+    This is the API of User Service. Users can be created, deleted, edited, and
+    retrieved. Users can also log-in, which will create a session cookie and
+    issue a token. Logging out will delete the code.
+  version: "0.1.0"
+  termsOfService: 'https://www.iKoreaTown.net/terms'
+  contact:
+    email: jinguanglong11@icloud.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+
+servers:
+  - url: 'https://localhost:3001/api/v1/'
+
+tags:
+  - name: admin
+    description: Administrators can manage any users except for other adminstrators.
+
+paths:
+  /user:
+    post:
+      tags:
+      - admin
+      summary: Retrieves all users in the database
+      description: Only the "admin" user can access this.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          description: Search string
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: number
+                skip:
+                  type: number
+                filter:
+                  type: object
+                  properties:
+                    role:
+                      type: string
+                    userStatus:
+                      type: string
+      responses:
+        '200':
+          description: Retrieves the list of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  totalCount:
+                    type: number
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+
+  '/user/admin/{id}':
+    post:
+      tags:
+        - admin
+      summary: Edit user data
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                role:
+                  type: string
+                userStatus:
+                  type: string
+      responses:
+        '204':
+          description: Update successfully
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+  /user/register:
+    post:
+      summary: Create a new user
+      description: >-
+        Admin user can create a new user, or users can register and  create
+        their own account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                passwordConfirmation:
+                  type: string
+      responses:
+        '201':
+          description: User created successfully
+          headers:
+            refreshToken:
+              description: Refresh token
+              schema:
+                $ref: '#/components/schemas/Token'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    $ref: '#/components/schemas/Token'
+        '400':
+          $ref: '#/components/responses/400'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+
+  '/user/{id}':
+    get:
+      summary: Retrieves a user
+      description: >-
+        'Regular' users can only retrieve their own account, not other users.
+        Except for the "admin" user, who can retrieve anyone.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: Returns the user's data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+         $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    put:
+      summary: Update a user
+      description: >-
+        Users can only edit their own account, not other users. Except for the
+        admin user, who can edit anyone.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: User data was saved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+  /user/verify:
+    get:
+      summary: Verify Account
+      description: Users can verify account
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+  '/user/username/{id}':
+    post:
+      summary: Update users's username
+      description: Users can verify account
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+
+  '/user/phone/{id}':
+    post:
+      summary: Updatre users's phone
+      description: Users can verify account
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+
+  '/user/profilePhoto/{id}':
+    post:
+      summary: Updatre users's profile photo
+      description: Users can verify account
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          image/*:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+  /user/password:
+    post:
+      summary: Updatre users's profile photo
+      description: Users can verify account
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                passwordConfirmation:
+                  type: string
+      responses:
+        '204':
+          description: OK
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+
+  /auth/login:
+    post:
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: An object contain User object and access token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    $ref: '#/components/schemas/Token'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          description: Invalid email or password
+        '403':
+          description: Invalid email or password
+        '500':
+          $ref: '#/components/responses/500'
+
+  /auth/logout:
+    get:
+      summary: Logs out
+      description: 'Users can log themselves out, not other users.'
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Logout successfully
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+  '/auth/mail/verify/{email}':
+    get:
+      summary: Sending account verification email
+      description: Sending users's verification email
+      parameters:
+        - $ref: '#/components/parameters/email'
+      responses:
+        '204':
+          description: OK
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+  '/auth/mail/password/{email}':
+    get:
+      summary: Sending change password email
+      parameters:
+        - $ref: '#/components/parameters/email'
+      responses:
+        '204':
+          description: OK
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+  '/auth/phoneVerificationCode/{phoneNumber}':
+    get:
+      summary: Sending verification code to phone
+      parameters:
+        - $ref: '#/components/parameters/phoneNumber'
+      responses:
+        '204':
+          description: OK
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+components:
+  schemas:
+    User:
+      type: object
+      description: User schema
+      required:
+        - _id
+        - username
+        - password
+        - email
+        - role
+        - isVerified
+        - lastLogin
+        - userStatus
+      properties:
+        _id:
+          type: string
+          format: ObjectId
+          description: 'User id must be unique, id created by mongodb.'
+          example: 5a4ef8f5537cd042155581a5
+        username:
+          type: string
+          minLength: 4
+          maxLength: 20
+          pattern: ^\w+$
+          description: >-
+            Username must be unique, username is created by system automaticall,
+            user can change own username.
+          example: tony
+        email:
+          type: string
+          pattern: >-
+            /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+          description: email must be unique.
+          example: tony@abc.com
+        phoneNumber:
+          type: string
+          description: telephone must be unique.
+          example: 123-1234-1234
+        password:
+          type: string
+          minLength: 8
+          description: 'a super-secure, 8-character password'
+          example: 12345678
+        firstName:
+          type: string
+          minLength: 1
+          example: Tony
+        lastName:
+          type: string
+          minLength: 1
+          example: Kim
+        language:
+          type: string
+          example: en-US
+        gender:
+          type: string
+          enum:
+            - male
+            - female
+          example: male
+        birthday:
+          type: string
+          format: date-time
+        address:
+          type: object
+          properties:
+            province:
+              type: string
+              example: Jiangsu
+            city:
+              type: string
+              example: Nanjing
+            area:
+              type: string
+              example: Xuanwu
+            street:
+              type: string
+              example: 仙林文枢东路7号晴天广场2F
+        isVerified:
+          type: boolean
+          default: false
+        point:
+          type: integer
+          default: 0
+        following:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: ObjectId
+                example: 5a4ef8f5537cd042155581a5
+              username:
+                type: string
+                example: kim911
+              profilePhotoUri:
+                type: string
+        followers:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: ObjectId
+                example: 5a4ef8f5537cd042155581a5
+              name:
+                type: string
+                example: Kim
+        interestedIn:
+          type: array
+          description: tags that the user subscribed
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: ObjectId
+                example: 5a4ef8f5537cd042155581a5
+              title:
+                type: string
+                example: BBQ
+        profilePhotoUri:
+          type: string
+          description: User profile Photo url
+          example: 'https://www.ikoreatwon.com/user/5a4ef8f5537cd042155581a5/avatar.png'
+        lastLogin:
+          type: array
+          items:
+            type: object
+            properties:
+              agent:
+                type: string
+                description: User agent
+                example: Chrome
+              ip:
+                type: string
+                description: User Ip address
+                example: 1.1.1.1
+              time:
+                type: string
+                format: date-time
+                description: when the user last logged in.
+                example: 2017-05-11T14-00-32Z
+        role:
+          type: string
+          enum:
+            - god
+            - admin
+            - manager
+            - regular
+          default: regular
+        userStatus:
+          type: string
+          enum:
+            - normal
+            - suspended
+          example: normal
+        createdAt:
+          type: string
+          format: date-time
+          description: when the user registered.
+          readOnly: true
+          example: 2015-01-01T00-00-00Z
+
+    Token:
+      type: string
+      description: jwt
+
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          example: 404
+        message:
+          type: string
+          example: Not found
+
+  responses:
+    204:
+      description: OK
+
+    400:
+      description: Bad JSON formatting in the request.
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    401:
+      description: Unauthorized
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    403:
+      description: Forbidden
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    404:
+      description: Not found
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    409:
+      description: Conflict
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    500:
+      description: Internal server error
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      description: user's id
+      schema:
+        type: string
+    email:
+      name: email
+      in: path
+      required: true
+      description: users's email
+      schema:
+        type: string
+    phoneNumber:
+      name: phoneNumber
+      in: path
+      required: true
+      description: users's phone number
+      schema:
+        type: string
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
