@@ -1,400 +1,702 @@
-swagger: '2.0'
-info:
-  description: >-
-    This is the API of Business Service. Business can be created, deleted, edited, and retrieved by proper role.
-  version: 0.0.1
-  title: iKoreaTown Business Service API
+openapi: 3.0.0
 
-  termsOfService: https://www.iKoreaTown.net/terms
+info:
+  title: Business Service API
+  description: >-
+    This is the API of Business Service. Business can be created, deleted,
+    edited, and retrieved by proper role.
+  version: "0.1.0"
+  termsOfService: 'https://www.iKoreaTown.net/terms'
   contact:
     email: jinguanglong11@icloud.com
   license:
     name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
 
-# tags are used for organizing operations
+servers:
+  - url: 'https://localhost:3002/api/v1/'
+
 tags:
-- name: admin
-  description: Administrators can manage everything except for other adminstrators.
-- name: manager
-  description: Managers can manage busienss, stories, reviews and comments.
+  - name: manager
+    description: 'Managers can manage busienss, stories, reviews and comments.'
 
 paths:
   /business:
     get:
-      summary: Returns all business 
+      summary: Return business list
       description: Anyone can get all business.
-      operationId: getBusiness
       parameters:
-        - name: listSize
+        - name: limit
           in: query
           description: Number of business returned
-          type: integer
-        - name: pageNumber
+          schema:
+            type: integer
+        - name: skip
           in: query
           description: page number
-          type: integer
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      responses:
-        200:
-          description: Returns the list of business
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/business'
-        400:
-          $ref: '#/responses/Standard400ErrorResponse'
-        500:
-          $ref: '#/responses/Standard500ErrorResponse'
-          
+            type: integer
+        - name: state
+          in: query
+          description: Business state filter
+          schema:
+            type: string
+        - name: event
+          in: query
+          description: filter event
+          schema:
+            type: number
+        - name: search
+          in: query
+          description: Search busienss list
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns a list of business
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Business'
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
     post:
       tags:
-      - manager
+        - manager
       summary: Create a new business
       description: Admin or manager can create a business
-      operationId: createBusiness
       security:
-        - JWT: []
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - $ref: '#/parameters/jwtToken'
-        - name: businessData
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/business'
+        - bearerAuth: []
+      requestBody:
+        $ref: '#/components/schemas/Business'
       responses:
-        200:
+        '200':
           description: Business created successfully
-          schema:
-            $ref: '#/definitions/business'
-          headers:
-            Location:
-              type: string
-              description: The Server returns the url of the new business
-        400:
-          $ref: '#/responses/Standard400ErrorResponse'
-        500:
-          $ref: '#/responses/Standard500ErrorResponse'
-          
-  /business/{id}:
-    get:
-      summary: Retrieves a business
-      description: Anyone can retrieve business,
-      operationId: getBusinessById
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - $ref: '#/parameters/businessId'
-      responses:
-        200:
-          description: Returns the Business's data
-          schema:
-            $ref: '#/definitions/business'
-        401:
-          $ref: '#/responses/Standard401ErrorResponse'
-        404:
-          $ref: '#/responses/Standard404ErrorResponse'
-          
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Business'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#components/responses/401'
+        '403':
+          $ref: '#components/responses/403'
+        '404':
+          $ref: '#components/responses/404'
+        '409':
+          $ref: '#components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
     put:
       tags:
-      - manager
-      summary: Update a business
-      description: Proper role can only edit the business.
-      operationId: updateBusiness
+        - manager
+      summary: Update business
+      description: Admin or manager can update a business
       security:
-        - JWT: []
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - $ref: '#/parameters/jwtToken'
-        - name: id
-          in: path
-          required: true
-          description: The busines's id
-          type: string
-        - name: businessData
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/business'
+        - bearerAuth: []
+      requestBody:
+        $ref: '#/components/schemas/Business'
       responses:
-        200:
-          description: Business data was saved successfully
-          schema:
-            $ref: '#/definitions/business'
-        400:
-          $ref: '#/responses/Standard400ErrorResponse'
-        401:
-          $ref: '#/responses/Standard401ErrorResponse'
-        404:
-          $ref: '#/responses/Standard404ErrorResponse'
-          
+        '204':
+          description: Business updated successfully
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#components/responses/401'
+        '403':
+          $ref: '#components/responses/403'
+        '404':
+          $ref: '#components/responses/404'
+        '409':
+          $ref: '#components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
     delete:
       tags:
-      - admin
-      summary: Delete a business
-      description: Admin can delete a business.
-      operationId: deleteBusiness
+        - manager
+      summary: Delete business
+      description: Admin or manager can delete business
       security:
-        - JWT: []
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: The busines's id
-          type: string
-        - $ref: '#/parameters/jwtToken'
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _id:
+                  type: string
       responses:
-        204:
-          description: Business was deleted
-        400:
-          $ref: '#/responses/Standard400ErrorResponse'
-        404:
-          description: 'The {id} was not found.'
+        '204':
+          description: Business deleted successfully
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#components/responses/401'
+        '403':
+          $ref: '#components/responses/403'
+        '404':
+          $ref: '#components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
 
-definitions:  
-  # Business schema
-  business:
-    type: object
-    description: business schema
-    required: [id, state, name, category, rating, area, telephone, address, geo, businessStatus, priceRange, views, serviceHours, rest]
-    properties:
-      id:
-        type: string
-        format: ObjectId
-        example: 5a4ef8f5537cd042155581a5
-      state:
-        type: string
-        enum: 
-        - draft
-        - published
-      subDepartments:
-        type: array
-        description: Multiple departments
-        items:
-          type: object
-          properties:
-            id:
-              type: string
-              format: ObjectId
-            name:
-              type: string
-      category:
-        type: string
-        example: Chinese
+  '/business/{id}':
+    get:
+      summary: Retrieves a business
+      description: Anyone can retrieve business
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: Returns the Business's data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Business'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+  /business/category:
+    get:
+      summary: Retrieve categories list
+      description: Anyone can get categories list
+      parameters:
+        - name: search
+          in: query
+          description: Search busienss list
+          schema:
+            type: string
+      responses:
+        200:
+          description: Return categories list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        500:
+          $ref: '#/components/responses/500'
+    post:
       tags:
-        type: array
-        items:
-          type: string
-          example: BBQ
-      rating:
-        type: object
-        properties:
-          value:
-            type: number
-            example: 3.7
-          count:
-            type: integer
-            example: 7
-      name:
-        type: string
-        description: title must be unique.
-        example: Steak House
-      description:
-        type: string
-        example: Since 1997, bla bla bla...
-      telephone:
-        type: array
-        items:
-          type: string
-          example: 025-1234-1234
-      address:
-        type: object
-        properties:
-          province:
+        - manager
+      summary: Add new category
+      description: Manager or admin can add new category
+      requestBody:
+        $ref: '#/components/schemas/Category'
+      responses:
+        200:
+          description: Return categories list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        400:
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#components/responses/401'
+        '403':
+          $ref: '#components/responses/403'
+        '404':
+          $ref: '#components/responses/404'
+        '409':
+          $ref: '#components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+    put:
+      tags:
+        - manager
+      summary: Update category
+      description: Manager or admin can update category
+      requestBody:
+        $ref: '#/components/schemas/Category'
+      responses:
+        200:
+          description: Return categories list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        400:
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#components/responses/401'
+        '403':
+          $ref: '#components/responses/403'
+        '404':
+          $ref: '#components/responses/404'
+        '409':
+          $ref: '#components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      tags:
+        - manager
+      summary: Delete category
+      description: Manager or admin can delete category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _id:
+                  type: string
+      responses:
+        200:
+          description: Return categories list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        400:
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#components/responses/401'
+        '403':
+          $ref: '#components/responses/403'
+        '404':
+          $ref: '#components/responses/404'
+        '409':
+          $ref: '#components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+
+  /business/tag:
+    get:
+      summary: Retrieve tags list
+      description: Anyone can get tags list
+      parameters:
+        - name: search
+          in: query
+          description: Search busienss list
+          schema:
             type: string
-            example: Jiangsu
-          city:
-            type: string
-            example: Nanjing
-          area:
-            type: string
-            example: Xuanwu
-          street:
-            type: string
-            example: 仙林文枢东路7号晴天广场2F (청은마트 2층)
-      geo:
-        type: object
-        properties:
-          latitude:
-            type: number
-            example: 32.0968400000
-          longitude:
-            type: number
-            example: 118.9135000000
-      priceRange:
-        type: string
-        description: Average Price
-        example: 100-150
-      businessStatus:
-        type: string
-        enum: ['normal', 'dissoluted']
-      views:
-        type: integer
-        format: int32
-        description: the number of someone views
-        example: 12345
-      openingHoursSpec:
-        type: object
-        properties:
-          monFri:
-            type: object
-            properties:
-              opens: 
-                type: string
-                example: 10:00
-              closes:
-                type: string
-                example: 23:59
-          satSun:
-            type: object
-            properties:
-              opens: 
-                type: string
-                example: 10:00
-              closes:
-                type: string
-                example: 23:59
-      korean:
-        type: boolean
-      rest:
-        type: string
-        example: 연중무휴
-      payment:
-        type: array
-        items:
-          type: string
-          example: VISA
-      delivery:
-        type: boolean
-      event:
-        type: string
-        example: 30% off
-      createdAt:
-        type: string
-        format: date-time
-        description: The first day of the business
-      menu: 
-        type: array
-        items:
-          type: object
-          properties: 
-            name: 
-              type: string
-              example: 된장찌개
-            price:
-              type: integer
-              example: 15
-            hot:
-              type: boolean
-            new:
-              type: boolean
-          required:
-          - name
-          - price
-      businessImageUri:
-        type: string
-        description: Business Images uri
-        example: 'https://www.ikoreatwon.com/business/000000001/front.png'
-      reviewsList:
-        type: array
-        items: 
+      responses:
+        200:
+          description: Return tags list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+        500:
+          $ref: '#/components/responses/500'
+    post:
+      tags:
+        - manager
+      summary: Add new tag
+      description: Manager or admin can add new tag
+      requestBody:
+        $ref: '#/components/schemas/Tag'
+      responses:
+        200:
+          description: Return tags list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+        400:
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#components/responses/401'
+        '403':
+          $ref: '#components/responses/403'
+        '404':
+          $ref: '#components/responses/404'
+        '409':
+          $ref: '#components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+    put:
+      tags:
+        - manager
+      summary: Update tag
+      description: Manager or admin can update tag
+      requestBody:
+        $ref: '#/components/schemas/Tag'
+      responses:
+        200:
+          description: Return tags list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+        400:
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#components/responses/401'
+        '403':
+          $ref: '#components/responses/403'
+        '404':
+          $ref: '#components/responses/404'
+        '409':
+          $ref: '#components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      tags:
+        - manager
+      summary: Delete tag
+      description: Manager or admin can delete tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _id:
+                  type: string
+      responses:
+        200:
+          description: Return tags list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+        400:
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#components/responses/401'
+        '403':
+          $ref: '#components/responses/403'
+        '404':
+          $ref: '#components/responses/404'
+        '409':
+          $ref: '#components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+
+components:
+  schemas:
+    Business:
+      type: object
+      description: business schema
+      required:
+        - _id
+        - state
+        - cnName
+        - krName
+        - enName
+        - category
+        - telephone
+        - status
+        - priceRange
+        - views
+        - serviceHours
+        - rest
+      properties:
+        _id:
           type: string
           format: ObjectId
-      storiesList:
-        type: array
-        items:
+          example: 5a4ef8f5537cd042155581a5
+        state:
+          type: string
+          enum:
+            - draft
+            - published
+            - trash
+        cnName:
+          type: string
+          example: 一大把
+        krName:
+          type: string
+          example: 이따바
+        enName:
+          type: string
+          example: Yidaba
+        subDepartments:
+          type: array
+          description: Multiple departments (chain food)
+          items:
+            type: array
+            items:
+              type: string
+              format: ObjectId
+        category:
+          type: string
+          description: Business category id
+          example: Chinese
+        tags:
+          type: array
+          items:
+            type: string
+            format: ObjectId
+            example: 패밀리
+        tel:
+          type: string
+          example: 025-1234-1234
+        address:
           type: object
           properties:
-            id:
+            province:
               type: string
-            title:
+              example: Jiangsu
+            city:
               type: string
-          
-  Error:
-    type: object
-    properties:
-      status:
-        type: integer
-        example: 404
-      message:
+              example: Nanjing
+            area:
+              type: string
+              example: Xuanwu
+            street:
+              type: string
+              example: 仙林文枢东路7号晴天广场2F (청은마트 2층)
+        geo:
+          type: object
+          properties:
+            lat:
+              type: number
+              example: 32.09684
+            long:
+              type: number
+              example: 118.9135
+        description:
+          type: string
+          example: 'Since 1997, bla bla bla...'
+        priceRange:
+          type: string
+          description: Average Price
+          example: 100-150
+        status:
+          type: string
+          enum:
+            - normal
+            - dissoluted
+        viewsCount:
+          type: integer
+          format: int32
+          description: the number of someone views
+          example: 12345
+        favoredCount:
+          type: integer
+          format: int32
+          description: the number of user add to favorites
+          example: 12345
+        openingHoursSpec:
+          type: object
+          properties:
+            mon:
+              type: string
+            sun:
+              type: string
+        supportedLanguage:
+          type: array
+          items:
+            type: string
+        rest:
+          type: string
+          example: 연중무휴
+        payment:
+          type: array
+          items:
+            type: string
+            example: VISA
+        delivery:
+          type: string
+        event:
+          type: string
+          example: 30% off
+        menu:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: 된장찌개
+              price:
+                type: integer
+                example: 15
+              hot:
+                type: boolean
+              new:
+                type: boolean
+            required:
+              - name
+              - price
+        imageUri:
+          type: array
+          description: Business Images uri
+          items:
+            type: string
+        thumbnailUri:
+          type: object
+          description: Business image thumbnail uri
+          properties:
+            default:
+              type: string
+              example: 'https://www.ikoreatwon.com/business/000000001/default.png'
+            hd:
+              type: string
+              example: 'https://www.ikoreatwon.com/business/000000001/hd.png'
+        ratingAverage:
+          type: number
+          example: 3.7
+        reviewsCount:
+          type: integer
+          format: int32
+          description: the number of reviews
+          example: 123
+        reviewsList:
+          type: array
+          items:
+            type: string
+            format: ObjectId
+        storiesCount:
+          type: integer
+          format: int32
+          description: the number of stories
+        storiesList:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              title:
+                type: string
+
+    Category:
+      type: object
+      description: category schema
+      required:
+        - _id
+        - code
+        - krName
+        - cnName
+        - enName
+      properties:
+        _id:
+          type: string
+          format: ObjectId
+          example: 5a4ef8f5537cd042155581a5
+        code:
+          type: integer
+          example: 11
+        krName:
+          type: string
+          example: 맛집
+        cnName:
+          type: string
+          example: 美食
+        enName:
+          type: string
+          example: Restaurant
+        parent:
+          type: integer
+          example: 11
+
+    Tag:
+      description: tag schema
+      required:
+        - _id
+        - code
+        - krName
+        - cnName
+        - enName
+      properties:
+        _id:
+          type: string
+          format: ObjectId
+          example: 5a4ef8f5537cd042155581a5
+        code:
+          type: integer
+          example: 11
+        krName:
+          type: string
+          example: 패밀리
+        cnName:
+          type: string
+          example: 家庭
+        enName:
+          type: string
+          example: Family
+
+    Error:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 404
+        message:
+          type: string
+          example: Not found
+
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      description: The business's id
+      schema:
         type: string
-        example: Not found
 
-responses:
-  Standard400ErrorResponse:
-    description: Bad request.
-    schema:
-      $ref: '#/definitions/Error'
-      
-  Standard401ErrorResponse:
-    description: Unauthorized.
-    schema:
-      $ref: '#/definitions/Error'
-      
-  Standard403ErrorResponse:
-    description: Forbidden.
-    schema:
-      $ref: '#/definitions/Error'
-      
-  Standard404ErrorResponse:
-    description: Not found.
-    schema:
-      $ref: '#/definitions/Error'
-      
-  Standard500ErrorResponse:
-    description: An unexpected error occured.
-    schema:
-      $ref: '#/definitions/Error'
+  responses:
+    204:
+      description: OK
 
-securityDefinitions:
-  JWT:
-    type: apiKey
-    name: Authorization
-    description: For accessing the API, a valid JWT token must be passed in all the queries in the 'Authorization' header.
-    in: header
-    
-parameters:
-  businessId:
-    name: id
-    in: path
-    required: true
-    description: The busines's id
-    type: string
-  jwtToken:
-    name: token
-    in: header
-    required: true
-    description: access token
-    type: string
-    
-# Added by API Auto Mocking Plugin
-host: localhost:3002
-basePath: /api/v1/
-schemes:
- - https
+    400:
+      description: Bad JSON formatting in the request.
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    401:
+      description: Unauthorized
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    403:
+      description: Forbidden
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    404:
+      description: Not found
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    409:
+      description: Conflict
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    500:
+      description: Internal server error
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

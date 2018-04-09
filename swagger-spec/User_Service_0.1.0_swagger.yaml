@@ -639,6 +639,29 @@ components:
           type: string
           example: Not found
 
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      description: user's id
+      schema:
+        type: string
+    email:
+      name: email
+      in: path
+      required: true
+      description: users's email
+      schema:
+        type: string
+    phoneNumber:
+      name: phoneNumber
+      in: path
+      required: true
+      description: users's phone number
+      schema:
+        type: string
+
   responses:
     204:
       description: OK
@@ -679,29 +702,6 @@ components:
         'application/json':
           schema:
             $ref: '#/components/schemas/Error'
-
-  parameters:
-    id:
-      name: id
-      in: path
-      required: true
-      description: user's id
-      schema:
-        type: string
-    email:
-      name: email
-      in: path
-      required: true
-      description: users's email
-      schema:
-        type: string
-    phoneNumber:
-      name: phoneNumber
-      in: path
-      required: true
-      description: users's phone number
-      schema:
-        type: string
 
   securitySchemes:
     bearerAuth:
