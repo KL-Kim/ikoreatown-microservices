@@ -14,14 +14,24 @@ apiEndpoints:
   businessApi:
     host: 'localhost'
     paths:
+      - '/images/*'
       - '/api/v1/business'
       - '/api/v1/business/*'
       - '/api/v1/pca/*'
+  commentApi:
+    host: 'localhost'
+    paths:
+      - '/api/v1/review'
+      - '/api/v1/review/*'
+      - '/api/v1/comment'
+      - '/api/v1/comment/*'
 serviceEndpoints:
   user-service:
     url: 'http://localhost:3001/'
   business-service:
     url: 'http://localhost:3002/'
+  comment-service:
+    url: 'http://localhost:3003/'
 policies:
   - basic-auth
   - cors
@@ -51,4 +61,14 @@ pipelines:
       - proxy:
           - action:
               serviceEndpoint: business-service
+              changeOrigin: true
+  comment:
+    apiEndpoints:
+      - commentApi
+    policies:
+    # Uncomment `key-auth:` when instructed to in the Getting Started guide.
+    # - key-auth:
+      - proxy:
+          - action:
+              serviceEndpoint: comment-service
               changeOrigin: true
