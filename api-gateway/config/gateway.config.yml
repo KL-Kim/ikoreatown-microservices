@@ -27,6 +27,11 @@ apiEndpoints:
       - '/api/v1/review/*'
       - '/api/v1/comment'
       - '/api/v1/comment/*'
+  notificationApi:
+    host: 'localhost'
+    paths:
+      - '/api/v1/notification'
+      - '/api/v1/notification/*'
 serviceEndpoints:
   user-service:
     url: 'http://localhost:3001/'
@@ -34,6 +39,8 @@ serviceEndpoints:
     url: 'http://localhost:3002/'
   comment-service:
     url: 'http://localhost:3003/'
+  notification-service:
+    url: 'http://localhost:3004/'
 policies:
   - basic-auth
   - cors
@@ -73,4 +80,14 @@ pipelines:
       - proxy:
           - action:
               serviceEndpoint: comment-service
+              changeOrigin: true
+  notification:
+    apiEndpoints:
+      - notificationApi
+    policies:
+    # Uncomment `key-auth:` when instructed to in the Getting Started guide.
+    # - key-auth:
+      - proxy:
+          - action:
+              serviceEndpoint: notification-service
               changeOrigin: true

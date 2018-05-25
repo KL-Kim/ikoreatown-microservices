@@ -1,214 +1,389 @@
-swagger: '2.0'
+openapi: 3.0.0
+
 info:
   description: This is the API of Review/Comment Service
-  version: 0.0.1
+  version: "0.1.0"
   title: Comment/Review Service API
-
-  termsOfService: https://www.iKoreaTown.net/terms
+  termsOfService: 'https://www.iKoreaTown.net/terms'
   contact:
     email: jinguanglong11@icloud.com
   license:
     name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
 
-# tags are used for organizing operations
+servers:
+  - url: 'https://localhost:3003/api/v1'
+
 tags:
-- name: admin
-- name: manager
-- name: regular
+  - name: manager
+  - name: regular
 
 paths:
-  /comment:
+  /review:
     get:
       tags:
-      - manager
-      - admin
+      - regular
       summary: Retrieve all reviews/comments
-      operationId: getComments
-      description: |
-        Only 'admin' or 'manager' can access this.
-      produces:
-      - application/json
+      description: Anyone can access this.
       parameters:
-      - in: query
-        name: listSize
-        description: Number of comments returned
-        required: false
-        type: integer
-      - in: query
-        name: pageNumber
-        description: page number
-        type: integer
-      - $ref: '#/parameters/jwtToken'
-      
+        - name: limit
+          in: query
+          description: Number of reviews returned
+          schema:
+            type: integer
+        - name: skip
+          in: query
+          description: Number of reviews to skip
+          schema:
+            type: integer
+        - name: bid
+          in: query
+          description: business id
+          schema:
+            type: string
+            format: ObjectId
+        - name: uid
+          in: query
+          description: user id
+          schema:
+            type: string
+            format: ObjectId
+        - name: orderBy
+          in: query
+          description: review list order
+          schema:
+            type: string
+        - name: search
+          in: query
+          description: search term
+          schema:
+            type: string
       responses:
         200:
           description: search results matching criteria
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Review'
-    
-definitions:
-  Review:
-    type: object
-    required:
-    - id
-    - subjectId
-    - author
-    - type
-    - status
-    - rating
-    - content
-    - createdAt
-    properties:
-      id:
-        type: string
-        format: ObjectId
-        example: 5a4ef8f5537cd042155581a5
-      state:
-        type: string
-        enum: 
-        - draft
-        - published
-      subjectId:
-        type: string
-        format: ObjectId
-        example: 5a4ef8f5537cd042155581b1
-      author:
-        type: string
-        format: ObjectId
-        example: 5a4ef8f5537cd042155581b1
-      parentCommentId:
-        type: string
-        format: ObjectId
-        default: null
-        example: 5a4ef8f5537cd042155581b1
-      type:
-        type: string
-        enum:
-        - review
-        - comment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  list:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Review'
+                  totalCount:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        404:
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    post:
       tags:
-        type: array
-        items:
-          type: string
-          example: delicious
-      content:
-        type: string
-        example: Very very good.
-      rating:
-        type: integer
-        example: 5
-      status:
-        type: string
-        enum:
-        - approved
-        - suspended
-      createdAt:
-        type: string
-        format: date-time
-      modifiedAt:
-        type: string
-        format: date-time
-      upVote:
-        type: object
-        required: 
-        - count
-        properties:
-          userList:
-            type: array
-            items: 
-              type: string
-              example: 5a4ef8f5537cd042155581b1
-          count:
-            type: integer
-            default: 0
-            example: 7
-      downVote:
-        type: object
-        required: 
-        - count
-        properties:
-          userList:
-            type: array
-            items: 
-              type: string
-              example: 5a4ef8f5537cd042155581b1
-          count:
-            type: integer
-            default: 0
-            example: 7
-      imageUri:
-        type: object
-        properties:
-          imageBaseUrl:
+        - regular
+      summary: Add new review
+      description: Only regular user can add new review
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+      responses:
+        200:
+          description: Review added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  list:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Review'
+                  totalCount:
+                    type: integer
+        400:
+          $ref: '#/components/responses/400'
+        401:
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+    put:
+      tags:
+        - regular
+        - manager
+      summary: Update review
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+      responses:
+        200:
+          description: Review updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  list:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Review'
+                  totalCount:
+                    type: integer
+        400:
+          $ref: '#/components/responses/400'
+        401:
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      tags:
+        - regular
+      summary: Delete review
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _id:
+                  type: string
+                  format: ObjectId
+                uid:
+                  type: string
+                  format: ObjectId
+      responses:
+        200:
+          description: Review deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  list:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Review'
+                  totalCount:
+                    type: integer
+        400:
+          $ref: '#/components/responses/400'
+        401:
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+
+  '/vote/{id}':
+    put:
+      tags:
+      - regular
+      summary: Regular user can vote other user's review
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Review's id
+          required: true
+          schema:
             type: string
-          imageFiles:
-            type: array
-            items:
-              type: string
-              format: file
+            format: ObjectId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uid:
+                  type: string
+                  format: ObjectId
+      responses:
+        200:
+          description: Vote successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        400:
+          $ref: '#/components/responses/400'
+        401:
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
 
-  Error:
-    type: object
-    required:
-    - status
-    - message
-    properties:
-      status:
-        type: integer
-        example: 404
-      message:
-        type: string
-        example: Not found
-    
-  
-responses:
-  Standard400ErrorResponse:
-    description: Bad request.
-    schema:
-      $ref: '#/definitions/Error'
-      
-  Standard401ErrorResponse:
-    description: Unauthorized.
-    schema:
-      $ref: '#/definitions/Error'
-      
-  Standard403ErrorResponse:
-    description: Forbidden.
-    schema:
-      $ref: '#/definitions/Error'
-      
-  Standard404ErrorResponse:
-    description: Not found.
-    schema:
-      $ref: '#/definitions/Error'
-      
-  Standard500ErrorResponse:
-    description: An unexpected error occured.
-    schema:
-      $ref: '#/definitions/Error'
+components:
+  schemas:
+    Review:
+      type: object
+      required:
+        - id
+        - businessId
+        - userId
+        - status
+        - rating
+        - content
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: ObjectId
+          example: 5a4ef8f5537cd042155581a5
+        status:
+          type: string
+          enum:
+            - normal
+            - suspended
+        quality:
+          type: number
+          format: int32
+        busienssId:
+          type: string
+          format: ObjectId
+          example: 5a4ef8f5537cd042155581b1
+        business:
+          description: For mongoose population
+          type: string
+          format: ObjectId
+          example: 5a4ef8f5537cd042155581b1
+        userId:
+          type: string
+          format: ObjectId
+          example: 5a4ef8f5537cd042155581b1
+        user:
+          description: For mongoose population
+          type: string
+          format: ObjectId
+          example: 5a4ef8f5537cd042155581b1
+        rating:
+          type: integer
+          example: 5
+        content:
+          type: string
+          example: Very very good.
+        serviceGood:
+          type: boolean
+          default: fault
+        envGood:
+          type: boolean
+          default: fault
+        comeback:
+          type: boolean
+          default: fault
+        upVote:
+          type: array
+          items:
+            type: string
+            example: 5a4ef8f5537cd042155581b1
+        downVote:
+          type: array
+          items:
+            type: string
+            example: 5a4ef8f5537cd042155581b1
+        imagesUri:
+          type: array
+          items:
+            type: string
+            format: file
+        createdAt:
+          type: string
+          format: date-time
 
-securityDefinitions:
-  JWT:
-    type: apiKey
-    name: Authorization
-    description: For accessing the API, a valid JWT token must be passed in all the queries in the 'Authorization' header.
-    in: header
-    
-parameters:
-  jwtToken:
-    name: token
-    in: header
-    required: true
-    description: access token
-    type: string
-    
-# Added by API Auto Mocking Plugin
-host: localhost:3003
-# basePath: /ikoreatown/ikoreatown_comment_service_api/1.0.0
-schemes:
- - https
-# Added by API Auto Mocking Plugin
-basePath: /api/v1
+    Error:
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: integer
+          example: 404
+        message:
+          type: string
+          example: Not found
+
+  responses:
+    204:
+      description: OK
+
+    400:
+      description: Bad JSON formatting in the request.
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    401:
+      description: Unauthorized
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    403:
+      description: Forbidden
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    404:
+      description: Not found
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    409:
+      description: Conflict
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    500:
+      description: Internal server error
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

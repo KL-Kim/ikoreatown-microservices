@@ -82,7 +82,732 @@ paths:
                 $ref: '#/components/schemas/Business'
         '400':
           $ref: '#/components/responses/400'
+        '401':openapi: 3.0.0
+
+info:
+  title: Business Service API
+  description: >-
+    This is the API of Business Service. Business can be created, deleted,
+    edited, and retrieved by proper role.
+  version: "0.1.0"
+  termsOfService: 'https://www.iKoreaTown.net/terms'
+  contact:
+    email: jinguanglong11@icloud.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+
+servers:
+  - url: 'https://localhost:3002/api/v1/'
+
+tags:
+  - name: manager
+    description: 'Managers can manage busienss, stories, reviews and comments.'
+
+paths:
+  /business:
+    get:
+      summary: Return business list
+      description: Anyone can get all business.
+      parameters:
+        - name: limit
+          in: query
+          description: Number of business returned
+          schema:
+            type: integer
+        - name: skip
+          in: query
+          description: page number
+          schema:
+            type: integer
+        - name: state
+          in: query
+          description: Business state filter
+          schema:
+            type: string
+        - name: event
+          in: query
+          description: filter event
+          schema:
+            type: number
+        - name: search
+          in: query
+          description: Search busienss list
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns a list of business
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Business'
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      tags:
+        - manager
+      summary: Create a new business
+      description: Admin or manager can create a business
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Business'
+      responses:
+        '200':
+          description: Business created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Business'
+        '400':
+          $ref: '#/components/responses/400'
         '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+    put:
+      tags:
+        - manager
+      summary: Update business
+      description: Admin or manager can update a business
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Business'
+      responses:
+        '204':
+          description: Business updated successfully
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      tags:
+        - manager
+      summary: Delete business
+      description: Admin or manager can delete business
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _id:
+                  type: string
+      responses:
+        '204':
+          description: Business deleted successfully
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+  '/business/{id}':
+    get:
+      summary: Retrieves a business
+      description: Anyone can retrieve business
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: Returns the Business's data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Business'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+  /category:
+    get:
+      summary: Retrieve categories list
+      description: Anyone can get categories list
+      parameters:
+        - name: search
+          in: query
+          description: Search busienss list
+          schema:
+            type: string
+      responses:
+        200:
+          description: Return categories list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        500:
+          $ref: '#/components/responses/500'
+    post:
+      tags:
+        - manager
+      summary: Add new category
+      description: Manager or admin can add new category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+      responses:
+        200:
+          description: Return categories list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        400:
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+    put:
+      tags:
+        - manager
+      summary: Update category
+      description: Manager or admin can update category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+      responses:
+        200:
+          description: Return categories list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        400:
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      tags:
+        - manager
+      summary: Delete category
+      description: Manager or admin can delete category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _id:
+                  type: string
+      responses:
+        200:
+          description: Return categories list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        400:
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+
+  /tag:
+    get:
+      summary: Retrieve tags list
+      description: Anyone can get tags list
+      parameters:
+        - name: search
+          in: query
+          description: Search busienss list
+          schema:
+            type: string
+      responses:
+        200:
+          description: Return tags list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+        500:
+          $ref: '#/components/responses/500'
+    post:
+      tags:
+        - manager
+      summary: Add new tag
+      description: Manager or admin can add new tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tag'
+      responses:
+        200:
+          description: Return tags list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+        400:
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+    put:
+      tags:
+        - manager
+      summary: Update tag
+      description: Manager or admin can update tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tag'
+      responses:
+        200:
+          description: Return tags list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+        400:
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      tags:
+        - manager
+      summary: Delete tag
+      description: Manager or admin can delete tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _id:
+                  type: string
+      responses:
+        200:
+          description: Return tags list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+        400:
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+
+components:
+  schemas:
+    Business:
+      type: object
+      description: business schema
+      required:
+        - _id
+        - state
+        - cnName
+        - krName
+        - enName
+        - category
+        - telephone
+        - status
+        - priceRange
+        - views
+        - serviceHours
+        - rest
+      properties:
+        _id:
+          type: string
+          format: ObjectId
+          example: 5a4ef8f5537cd042155581a5
+        state:
+          type: string
+          enum:
+            - draft
+            - published
+            - trash
+        cnName:
+          type: string
+          example: 一大把
+        krName:
+          type: string
+          example: 이따바
+        enName:
+          type: string
+          example: Yidaba
+        subDepartments:
+          type: array
+          description: Multiple departments (chain food)
+          items:
+            type: array
+            items:
+              type: string
+              format: ObjectId
+        category:
+          type: string
+          description: Business category id
+          example: Chinese
+        tags:
+          type: array
+          items:
+            type: string
+            format: ObjectId
+            example: 패밀리
+        tel:
+          type: string
+          example: 025-1234-1234
+        address:
+          type: object
+          properties:
+            province:
+              type: string
+              example: Jiangsu
+            city:
+              type: string
+              example: Nanjing
+            area:
+              type: string
+              example: Xuanwu
+            street:
+              type: string
+              example: 仙林文枢东路7号晴天广场2F (청은마트 2층)
+        geo:
+          type: object
+          properties:
+            lat:
+              type: number
+              example: 32.09684
+            long:
+              type: number
+              example: 118.9135
+        description:
+          type: string
+          example: 'Since 1997, bla bla bla...'
+        priceRange:
+          type: string
+          description: Average Price
+          example: 100-150
+        status:
+          type: string
+          enum:
+            - normal
+            - dissoluted
+        viewsCount:
+          type: integer
+          format: int32
+          description: the number of someone views
+          example: 12345
+        favoredCount:
+          type: integer
+          format: int32
+          description: the number of user add to favorites
+          example: 12345
+        openingHoursSpec:
+          type: object
+          properties:
+            mon:
+              type: string
+            sun:
+              type: string
+        supportedLanguage:
+          type: array
+          items:
+            type: string
+        rest:
+          type: string
+          example: 연중무휴
+        payment:
+          type: array
+          items:
+            type: string
+            example: VISA
+        delivery:
+          type: string
+        event:
+          type: string
+          example: 30% off
+        menu:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: 된장찌개
+              price:
+                type: integer
+                example: 15
+              hot:
+                type: boolean
+              new:
+                type: boolean
+            required:
+              - name
+              - price
+        imageUri:
+          type: array
+          description: Business Images uri
+          items:
+            type: string
+        thumbnailUri:
+          type: object
+          description: Business image thumbnail uri
+          properties:
+            default:
+              type: string
+              example: 'https://www.ikoreatwon.com/business/000000001/default.png'
+            hd:
+              type: string
+              example: 'https://www.ikoreatwon.com/business/000000001/hd.png'
+        ratingAverage:
+          type: number
+          example: 3.7
+        reviewsCount:
+          type: integer
+          format: int32
+          description: the number of reviews
+          example: 123
+        reviewsList:
+          type: array
+          items:
+            type: string
+            format: ObjectId
+        storiesCount:
+          type: integer
+          format: int32
+          description: the number of stories
+        storiesList:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              title:
+                type: string
+
+    Category:
+      type: object
+      description: category schema
+      required:
+        - _id
+        - code
+        - krName
+        - cnName
+        - enName
+      properties:
+        _id:
+          type: string
+          format: ObjectId
+          example: 5a4ef8f5537cd042155581a5
+        code:
+          type: integer
+          example: 11
+        krName:
+          type: string
+          example: 맛집
+        cnName:
+          type: string
+          example: 美食
+        enName:
+          type: string
+          example: Restaurant
+        parent:
+          type: integer
+          example: 11
+
+    Tag:
+      description: tag schema
+      required:
+        - _id
+        - code
+        - krName
+        - cnName
+        - enName
+      properties:
+        _id:
+          type: string
+          format: ObjectId
+          example: 5a4ef8f5537cd042155581a5
+        code:
+          type: integer
+          example: 11
+        krName:
+          type: string
+          example: 패밀리
+        cnName:
+          type: string
+          example: 家庭
+        enName:
+          type: string
+          example: Family
+
+    Error:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 404
+        message:
+          type: string
+          example: Not found
+
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      description: The business's id
+      schema:
+        type: string
+
+  responses:
+    204:
+      description: OK
+
+    400:
+      description: Bad JSON formatting in the request.
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    401:
+      description: Unauthorized
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    403:
+      description: Forbidden
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    404:
+      description: Not found
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    409:
+      description: Conflict
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+    500:
+      description: Internal server error
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
           $ref: '#components/responses/401'
         '403':
           $ref: '#components/responses/403'
