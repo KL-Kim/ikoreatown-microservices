@@ -32,6 +32,11 @@ apiEndpoints:
     paths:
       - '/api/v1/notification'
       - '/api/v1/notification/*'
+  blogApi:
+    host: 'localhost'
+    paths:
+      - '/api/v1/post'
+      - '/api/v1/post/*'
 serviceEndpoints:
   user-service:
     url: 'http://localhost:3001/'
@@ -41,6 +46,8 @@ serviceEndpoints:
     url: 'http://localhost:3003/'
   notification-service:
     url: 'http://localhost:3004/'
+  blog-service:
+    url: 'http://localhost:3005/'
 policies:
   - basic-auth
   - cors
@@ -90,4 +97,14 @@ pipelines:
       - proxy:
           - action:
               serviceEndpoint: notification-service
+              changeOrigin: true
+  blog:
+    apiEndpoints:
+      - blogApi
+    policies:
+    # Uncomment `key-auth:` when instructed to in the Getting Started guide.
+    # - key-auth:
+      - proxy:
+          - action:
+              serviceEndpoint: blog-service
               changeOrigin: true
