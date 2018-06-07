@@ -3,3 +3,5 @@ web-service
 review-service
 business-service
 comment-service
+blog-service
+notification-service
