@@ -19,7 +19,9 @@ apiEndpoints:
       - '/api/v1/business/*'
       - '/api/v1/pca/*'
       - '/api/v1/category'
+      - '/api/v1/category/*'
       - '/api/v1/tag'
+      - '/api/v1/tag/*'
   commentApi:
     host: 'localhost'
     paths:
