@@ -1,3 +1,4 @@
+# Micro-services
 user-service
 web-service
 review-service
@@ -6,3 +7,15 @@ comment-service
 blog-service
 notification-service
 admin-web-service
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+yarn.lock
